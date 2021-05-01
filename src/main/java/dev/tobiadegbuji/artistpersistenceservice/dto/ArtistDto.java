@@ -33,11 +33,7 @@ public class ArtistDto {
 
     private String spotifyHandle;
 
-    private Set<Image> bannerImages;
-
-    private Set<Image> profileImages;
-
-    private Set<Image> randomImages;
+    private Set<Image> images;
 
     private Set<Album> discography;
 

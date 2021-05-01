@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import java.util.UUID;
 
@@ -16,5 +18,8 @@ public class Image extends BaseEntity{
     private UUID imgId;
 
     private String imgURL;
+
+    @Enumerated(value = EnumType.STRING)
+    private ImgTpye imgTpye;
 
 }
