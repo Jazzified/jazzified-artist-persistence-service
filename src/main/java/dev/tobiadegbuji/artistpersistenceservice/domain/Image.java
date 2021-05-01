@@ -1,14 +1,16 @@
 package dev.tobiadegbuji.artistpersistenceservice.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-public class Image {
+public class Image extends BaseEntity{
 
     @Id
     private UUID imgId;
