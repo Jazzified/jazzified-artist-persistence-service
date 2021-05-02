@@ -5,6 +5,7 @@ import dev.tobiadegbuji.artistpersistenceservice.domain.Episode;
 import dev.tobiadegbuji.artistpersistenceservice.domain.Genre;
 import dev.tobiadegbuji.artistpersistenceservice.domain.Image;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ArtistDto {
 
     @Null
