@@ -3,10 +3,7 @@ package dev.tobiadegbuji.artistpersistenceservice.domain;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
@@ -18,6 +15,7 @@ public class Genre extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID genreId;
 
+    @Column(unique = true)
     private String name;
 
     private String description;

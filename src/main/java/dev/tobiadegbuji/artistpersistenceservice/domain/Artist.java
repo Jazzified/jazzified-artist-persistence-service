@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.id.UUIDGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class Artist extends BaseEntity{
     @GeneratedValue(generator = UUIDGenerator.UUID_GEN_STRATEGY)
     private UUID artistId;
 
+    @NotBlank
     private String name;
 
     private String biography;

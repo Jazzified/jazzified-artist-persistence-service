@@ -5,11 +5,14 @@ import dev.tobiadegbuji.artistpersistenceservice.domain.Genre;
 import dev.tobiadegbuji.artistpersistenceservice.domain.Image;
 import dev.tobiadegbuji.artistpersistenceservice.domain.ImgTpye;
 import dev.tobiadegbuji.artistpersistenceservice.dto.SpotifyArtist;
+import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
 @Component
+@Log4j2
 public class SpotifyArtistMapper {
 
     public Artist spotifyArtistToArtist(SpotifyArtist spotifyArtist) {
@@ -28,6 +31,10 @@ public class SpotifyArtistMapper {
                             .map(i -> new Image(i.getUrl(), ImgTpye.UNKNOWN))
                             .collect(Collectors.toSet()))
                     .build();
+
+            Artist finalArtist = artist;
+
+            log.debug(() -> "Mapped Artist: " + finalArtist);
         }
         catch (Exception e){
             //TODO: IMPLEMENT LATER
