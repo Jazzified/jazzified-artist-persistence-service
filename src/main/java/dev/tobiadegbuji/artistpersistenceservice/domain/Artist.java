@@ -1,10 +1,7 @@
 package dev.tobiadegbuji.artistpersistenceservice.domain;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.id.UUIDGenerator;
 
 import javax.persistence.*;
@@ -17,6 +14,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Artist extends BaseEntity{
 
     @Id
@@ -32,6 +30,8 @@ public class Artist extends BaseEntity{
     private String instagramHandle;
 
     private String spotifyHandle;
+
+    private String spotifyId;
 
     @OneToMany
     private Set<Image> images;

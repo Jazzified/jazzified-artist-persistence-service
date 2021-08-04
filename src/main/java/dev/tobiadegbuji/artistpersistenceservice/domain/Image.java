@@ -22,4 +22,12 @@ public class Image extends BaseEntity{
     @Enumerated(value = EnumType.STRING)
     private ImgTpye imgTpye;
 
+    public Image(String imgURL, ImgTpye imgTpye) {
+        this.imgURL = imgURL;
+        this.imgTpye = imgTpye;
+    }
+
+    public Image() {
+
+    }
 }

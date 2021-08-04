@@ -22,4 +22,11 @@ public class Genre extends BaseEntity{
 
     private String description;
 
+    public Genre(String name) {
+        this.name = name;
+    }
+
+    public Genre() {
+
+    }
 }
