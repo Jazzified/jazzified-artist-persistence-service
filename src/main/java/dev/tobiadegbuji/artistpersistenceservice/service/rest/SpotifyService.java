@@ -3,24 +3,24 @@ package dev.tobiadegbuji.artistpersistenceservice.service.rest;
 import dev.tobiadegbuji.artistpersistenceservice.dto.SearchArtistResponse;
 import dev.tobiadegbuji.artistpersistenceservice.dto.SpecificArtistSearchRequest;
 import dev.tobiadegbuji.artistpersistenceservice.dto.SpotifyArtists;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import org.springframework.http.HttpStatus;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
-import java.util.Random;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 @Service
 public class SpotifyService {
 
 
-    @CircuitBreaker(name = "retrieveSpotifyArtist", fallbackMethod = "retrieveSpotifyArtistFallback")
+    @CircuitBreaker(name = "retrieveSpotifyArtistCB", fallbackMethod = "retrieveSpotifyArtistFallback")
+    @Retry(name = "retrieveSpotifyArtistRT", fallbackMethod = "retrieveSpotifyArtistFallback")
+    @Bulkhead(name = "retrieveSpotifyArtistBH", type = Bulkhead.Type.THREADPOOL, fallbackMethod = "retrieveSpotifyArtistFallback")
     public Mono<SearchArtistResponse> retrieveSpotifyArtist(SpecificArtistSearchRequest searchRequest) {
 
         WebClient webClient = WebClient
