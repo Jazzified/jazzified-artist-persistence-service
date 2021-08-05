@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/v1/jazzified/artist")
+@RequestMapping("/api/v1/jazzified/artist")
 @AllArgsConstructor
 public class ArtistController {
 

@@ -12,14 +12,19 @@ import dev.tobiadegbuji.artistpersistenceservice.repo.ArtistRepo;
 import dev.tobiadegbuji.artistpersistenceservice.repo.GenreRepo;
 import dev.tobiadegbuji.artistpersistenceservice.repo.ImageRepo;
 import dev.tobiadegbuji.artistpersistenceservice.service.rest.SpotifyService;
+import dev.tobiadegbuji.artistpersistenceservice.utils.Constants;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static dev.tobiadegbuji.artistpersistenceservice.utils.Constants.SPOTIFY_SERVICE_UNAVAILABLE;
 
 @Log4j2
 @Service
@@ -38,7 +43,9 @@ public class ArtistServiceImpl implements ArtistService {
 
     private final SpotifyService spotifyService;
 
+
     @Override
+    @CircuitBreaker(name = "retrieveArtistById")
     public ArtistDto retrieveArtistById(UUID artistId) {
 
         Artist artist = artistRepo.findById(artistId)
@@ -76,12 +83,18 @@ public class ArtistServiceImpl implements ArtistService {
             List<SpotifyArtist> spotifyArtistList = result.getArtists().getItems();
 
             //Filtering search results using provided ID
-            SpotifyArtist spotifyArtist = spotifyArtistList.stream()
-                    .filter(artist -> artist.getId().equals(searchRequest.getArtistId()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("User not found")); //TODO: IMPLEMENT PROPER EXCEPTION
+            SpotifyArtist spotifyArtist = null;
 
-            log.debug(() -> "Specific Artist found as: " + spotifyArtist);
+            if (spotifyArtistList != null)
+                if (!spotifyArtistList.isEmpty())
+                    spotifyArtist = spotifyArtistList.stream()
+                            .filter(artist -> artist.getId().equals(searchRequest.getArtistId()))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("User not found")); //TODO: IMPLEMENT PROPER EXCEPTION
+
+            //Effectively final var
+            SpotifyArtist finalSpotifyArtist = spotifyArtist;
+            log.debug(() -> "Specific Artist found as: " + finalSpotifyArtist);
 
             //Mapping spotify artist to artist
             Artist artist = spotifyArtistMapper.spotifyArtistToArtist(spotifyArtist);
@@ -89,9 +102,7 @@ public class ArtistServiceImpl implements ArtistService {
             if (artist == null)
                 throw new RuntimeException("Mapping Exception Occurred."); //TODO: IMPLEMENT PROPER EXCEPTION
 
-            Artist artistTransientObjs = saveArtistTransientObjs(artist);
-
-            Artist savedArtist = artistRepo.save(artistTransientObjs);
+            Artist savedArtist = saveArtistTransientObjs(artist);
 
             log.debug(() -> "Saved Artist: " + savedArtist);
 
@@ -106,6 +117,10 @@ public class ArtistServiceImpl implements ArtistService {
 
     private Artist saveArtistTransientObjs(Artist artist) {
 
+        if(artist.getName().equals(SPOTIFY_SERVICE_UNAVAILABLE))
+            return artist;
+
+
         Set<Genre> generesToRemove = new HashSet<>();
 
         //If genre exist already, unique constraint violation is thrown. If thrown, add the genre to a removed list.
@@ -117,27 +132,29 @@ public class ArtistServiceImpl implements ArtistService {
                 if (Objects.requireNonNull(dataIntegrityViolationException.getMessage()).contains("genre")) {
                     generesToRemove.add(genre);
                     log.info("Duplicate Genre: " + genre + " was found.");
-                }
-                else
+                } else
                     throw dataIntegrityViolationException;
             }
         };
 
-        artist.getGenres()
-                .forEach(saveGenre);
+        if(artist.getGenres() != null) {
+            artist.getGenres()
+                    .forEach(saveGenre);
 
-        //Filtering out genres that already exist
-        Set<Genre> filteredGenreSet = artist.getGenres().
-                stream().filter(genre -> !generesToRemove.contains(genre))
-                .collect(Collectors.toSet());
+            //Filtering out genres that already exist
+            Set<Genre> filteredGenreSet = artist.getGenres().
+                    stream().filter(genre -> !generesToRemove.contains(genre))
+                    .collect(Collectors.toSet());
 
-        artist.setGenres(filteredGenreSet);
+            artist.setGenres(filteredGenreSet);
 
+        }
+
+        if(artist.getImages() != null)
         artist.getImages()
                 .forEach(imageRepo::save);
 
-        return artist;
-
+        return artistRepo.save(artist);
     }
 
 }
